@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taller IA Aplicada a las RP · ARPCM × Osuna AI</title>
+  <style>
+    :root {
+      --blue: #1478FC;
+      --blue-dark: #0f5fcc;
+      --purple: #7c5cbf;
+      --lavender: #BDA1FA;
+      --yellow: #BDA1FA;
+      --bg: #edf0f8;
+      --card: #ffffff;
+      --text: #1a1a2e;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --nav-h: 56px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+      background: linear-gradient(160deg, #dce3f5 0%, #e8e4f8 40%, #d8e8fa 100%);
+      position: relative; overflow: hidden;
+      padding: 80px 24px 100px;
+    }
+    #nodeCanvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    .hero-logo {
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 40px; position: relative; z-index: 1;
+    }
+    .hero-logo img { height: 112px; width: auto; filter: drop-shadow(0 2px 8px rgba(20,120,252,0.15)); }
+    .hero h1 {
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 900; line-height: 1.05;
+      letter-spacing: -2px;
+      position: relative; z-index: 1;
+      margin-bottom: 20px;
+    }
+    .hero h1 .line1 {
+      display: block;
+      background: linear-gradient(135deg, #1478FC 0%, #7c5cbf 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero h1 .line2 { display: block; color: #1a1a2e; }
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: #4a5568; margin-bottom: 8px;
+      position: relative; z-index: 1;
+    }
+    .hero-sub strong { color: var(--blue); }
+    .hero-instructor {
+      font-size: 12px; font-weight: 600; letter-spacing: 2px;
+      text-transform: uppercase; color: #6b80b0;
+      margin-bottom: 40px; position: relative; z-index: 1;
+    }
+    .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; position: relative; z-index: 1; }
+    .btn-primary {
+      background: var(--blue); color: #fff;
+      padding: 14px 28px; border-radius: 10px;
+      font-size: 15px; font-weight: 700; text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); }
+    .btn-outline {
+      background: #fff; color: var(--text);
+      padding: 14px 28px; border-radius: 10px;
+      font-size: 15px; font-weight: 700; text-decoration: none;
+      border: 1.5px solid var(--border);
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .btn-outline:hover { border-color: var(--blue); transform: translateY(-1px); }
+
+    /* ── NAV ── */
+    .nav-wrap {
+      position: sticky; top: 0; z-index: 100;
+      background: #fff; border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    }
+    .nav-inner {
+      display: flex; align-items: center; gap: 4px;
+      overflow-x: auto; padding: 0 16px;
+      scrollbar-width: none;
+    }
+    .nav-inner::-webkit-scrollbar { display: none; }
+    .nav-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 0 14px; height: var(--nav-h);
+      font-size: 13px; font-weight: 600; color: var(--muted);
+      background: none; border: none; cursor: pointer;
+      white-space: nowrap; border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+      flex-shrink: 0;
+    }
+    .nav-btn:hover { color: var(--blue); }
+    .nav-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+    .nav-btn .nav-icon { font-size: 16px; }
+
+    /* ── MAIN LAYOUT ── */
+    .page-body { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card); border-radius: 16px;
+      padding: 32px; margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 24px;
+    }
+    .section-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+      background: linear-gradient(135deg, #1478FC, #7c5cbf);
+      color: #fff;
+    }
+    .section-icon.orange { background: linear-gradient(135deg, #7c5cbf, #4c1d95); }
+    .section-icon.green  { background: linear-gradient(135deg, #BDA1FA, #7c5cbf); }
+    .section-icon.purple { background: linear-gradient(135deg, #7c5cbf, #4c1d95); }
+    .section-icon.yellow { background: linear-gradient(135deg, #1478FC, #0f5fcc); }
+    .section-icon.teal   { background: linear-gradient(135deg, #1478FC, #7c5cbf); }
+    .section-icon.pink   { background: linear-gradient(135deg, #ec4899, #be185d); }
+    .section-icon.gray   { background: linear-gradient(135deg, #6b7280, #374151); }
+    .section-title { font-size: 20px; font-weight: 800; color: var(--text); }
+    .section-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+    .time-pill {
+      background: var(--blue); color: #fff;
+      font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+    }
+    .dur-text { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+    /* ── TOOLS TABLE ── */
+    .tools-table { width: 100%; border-collapse: collapse; }
+    .tools-table th {
+      text-align: left; font-size: 12px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--muted); padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tools-table td { padding: 13px 12px; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+    .tools-table tr:last-child td { border-bottom: none; }
+    .tools-table tr:hover td { background: #f9fafb; }
+    .tool-name { font-weight: 700; color: var(--text); }
+    .tool-uso { color: var(--muted); }
+    .tool-cuenta { color: #374151; font-size: 13px; }
+    .tool-cuenta .free { color: var(--blue); font-weight: 600; }
+    .abrir-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 13px; font-weight: 600; color: var(--blue);
+      text-decoration: none; padding: 5px 10px;
+      border: 1px solid rgba(20,120,252,0.2);
+      border-radius: 6px; transition: background 0.15s;
+    }
+    .abrir-link:hover { background: rgba(20,120,252,0.06); }
+
+    /* ── BLOQUE CARD ── */
+    .bloque-card { margin-bottom: 20px; }
+
+    /* ── TOOL CHIPS ── */
+    .chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px;
+      text-decoration: none; transition: opacity 0.15s, transform 0.1s;
+      cursor: pointer;
+    }
+    a.chip:hover { opacity: 0.8; transform: translateY(-1px); }
+    .chip-chatgpt  { background: #d1fadf; color: #166534; }
+    .chip-claude   { background: #f5f3ff; color: #4c1d95; }
+    .chip-perplexity { background: #d1fae5; color: #065f46; }
+    .chip-gemini   { background: #ede9fe; color: #5b21b6; }
+    .chip-grok     { background: #f1f5f9; color: #334155; }
+    .chip-notebooklm { background: #fef9c3; color: #713f12; }
+    .chip-generic  { background: #e5e7eb; color: #374151; }
+
+    /* ── OPEN LINK in bloque header ── */
+    .open-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 13px; font-weight: 600; color: var(--blue);
+      text-decoration: none; padding: 5px 12px;
+      border: 1px solid rgba(20,120,252,0.25); border-radius: 8px;
+      background: rgba(20,120,252,0.04);
+      transition: background 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .open-link:hover { background: rgba(20,120,252,0.1); transform: translateY(-1px); }
+
+    /* inline tool link in text */
+    .tool-inline {
+      font-weight: 700; color: var(--blue); text-decoration: none;
+      border-bottom: 1.5px dotted rgba(20,120,252,0.4);
+      padding-bottom: 1px;
+    }
+    .tool-inline:hover { border-bottom-style: solid; }
+
+    /* ── PROMPT BOX ── */
+    .prompt-wrap { margin-bottom: 16px; }
+    .prompt-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px;
+      background: #f8f9fb; border: 1px solid var(--border);
+      border-bottom: none; border-radius: 10px 10px 0 0;
+      gap: 8px;
+    }
+    .prompt-header-left { display: flex; align-items: center; gap: 8px; }
+    .prompt-title { font-size: 13px; font-weight: 700; color: var(--text); }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 600; color: var(--muted);
+      background: #fff; border: 1px solid var(--border);
+      padding: 4px 10px; border-radius: 6px; cursor: pointer;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    .copy-btn:hover { color: var(--blue); border-color: var(--blue); }
+    .copy-btn.copied { color: var(--blue); border-color: var(--blue); }
+    .prompt-body {
+      background: #f8f9fb; border: 1px solid var(--border);
+      border-radius: 0 0 10px 10px;
+      padding: 14px 16px;
+      font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+      font-size: 12.5px; line-height: 1.75;
+      color: #374151; white-space: pre-wrap; overflow-x: auto;
+    }
+    .ph { color: var(--blue); font-weight: 700; }
+
+    /* ── INFO BOXES ── */
+    .info-box {
+      border-radius: 10px; padding: 16px 20px;
+      font-size: 14px; line-height: 1.6; margin-bottom: 16px;
+    }
+    .info-box.blue  { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .info-box.yellow { background: #f5f3ff; border: 1px solid #c4b5fd; color: #4c1d95; }
+    .info-box.purple { background: #f5f3ff; border: 1px solid #ddd6fe; color: #5b21b6; }
+    .info-box.green  { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .info-box strong { font-weight: 700; display: block; margin-bottom: 4px; }
+
+    /* ── COMPARISON TABLE ── */
+    .comp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .comp-table th {
+      background: #f1f5f9; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted);
+      padding: 9px 12px; text-align: left;
+    }
+    .comp-table td { padding: 11px 12px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+    .comp-table tr:last-child td { border-bottom: none; }
+    .comp-table .ia-name { font-weight: 700; color: var(--text); }
+    .comp-table .limit { color: #9ca3af; font-style: italic; }
+
+    /* ── STATS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px; margin-top: 4px;
+    }
+    .stat-card {
+      background: var(--card); border-radius: 14px;
+      padding: 20px 20px 18px;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--blue);
+      display: flex; align-items: flex-start; gap: 16px;
+    }
+    .stat-card.c-purple { border-left-color: var(--purple); }
+    .stat-card.c-yellow { border-left-color: var(--purple); }
+    .stat-card.c-green  { border-left-color: var(--lavender); }
+    .stat-num {
+      font-size: 2.6rem; font-weight: 900; color: var(--blue);
+      line-height: 1; flex-shrink: 0; min-width: 80px;
+    }
+    .stat-card.c-purple .stat-num { color: var(--purple); }
+    .stat-card.c-yellow .stat-num { color: var(--purple); }
+    .stat-card.c-green  .stat-num { color: var(--lavender); }
+    .stat-desc { font-size: 13px; color: #4b5563; line-height: 1.5; padding-top: 4px; }
+
+    /* ── BRIDGING ── */
+    .abc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    .abc-card { background: var(--bg); border-radius: 10px; padding: 16px; text-align: center; border: 1px solid var(--border); }
+    .abc-letter { font-size: 2rem; font-weight: 900; color: var(--blue); margin-bottom: 6px; }
+    .abc-word { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .abc-def { font-size: 12px; color: var(--muted); }
+
+    /* ── INSTRUCTOR ── */
+    .instructor-card {
+      background: var(--card); border-radius: 16px;
+      padding: 32px; margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+    }
+    .instructor-top {
+      display: flex; gap: 24px; align-items: center;
+      margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .instructor-photo {
+      width: 110px; height: 110px; border-radius: 50%; flex-shrink: 0;
+      border: 3px solid var(--blue);
+      box-shadow: 0 0 0 5px rgba(20,120,252,0.12);
+      object-fit: cover; object-position: center 15%;
+      transform: scale(1.15);
+    }
+    .instructor-info { flex: 1; min-width: 200px; }
+    .instructor-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 600; color: #374151;
+      background: #f3f4f6; border: 1px solid #e5e7eb;
+      padding: 4px 12px; border-radius: 20px; margin-bottom: 8px;
+    }
+    .instructor-name {
+      font-size: 26px; font-weight: 800; color: var(--text);
+      line-height: 1.1; margin-bottom: 4px;
+    }
+    .instructor-subtitle {
+      font-size: 14px; font-weight: 600; color: var(--blue);
+    }
+    .instructor-badge {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; flex-shrink: 0; text-align: center;
+      margin-left: auto;
+    }
+    .instructor-badge img {
+      width: 130px; height: auto; border-radius: 14px;
+      object-fit: contain;
+    }
+    .instructor-badge-label {
+      font-size: 10px; font-weight: 600; color: var(--muted);
+      line-height: 1.3; max-width: 90px;
+    }
+    .instructor-bio { font-size: 14px; color: #4b5563; line-height: 1.7; margin-bottom: 20px; }
+    .instructor-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+    .istat { text-align: center; border-radius: 12px; padding: 16px 10px; }
+    .istat.blue  { background: #eff6ff; }
+    .istat.purple{ background: #f5f3ff; }
+    .istat.yellow{ background: #f5f3ff; }
+    .istat.gray  { background: #f9fafb; border: 1px solid var(--border); }
+    .istat-num { font-size: 1.6rem; font-weight: 900; }
+    .istat.blue  .istat-num { color: var(--blue); }
+    .istat.purple .istat-num{ color: var(--purple); }
+    .istat.yellow .istat-num{ color: var(--purple); }
+    .istat.gray   .istat-num{ color: var(--text); }
+    .istat-label { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.3; }
+    .formation-header {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+    }
+    .formation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .formation-item {
+      background: var(--bg); border-radius: 10px; padding: 12px 16px;
+      border: 1px solid var(--border);
+    }
+    .formation-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .formation-school { font-size: 12px; color: var(--muted); }
+
+    /* ── CTA FINAL ── */
+    .cta-section {
+      background: linear-gradient(135deg, #1478FC 0%, #7c5cbf 100%);
+      border-radius: 20px; padding: 48px 32px; text-align: center;
+      margin-bottom: 20px;
+    }
+    .cta-section h2 { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+    .cta-section p { font-size: 15px; color: rgba(255,255,255,0.8); margin-bottom: 28px; }
+    .cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .cta-btn-white {
+      background: #fff; color: var(--blue);
+      padding: 13px 24px; border-radius: 10px;
+      font-size: 14px; font-weight: 700; text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .cta-btn-white:hover { opacity: 0.9; }
+    .cta-btn-ghost {
+      background: rgba(255,255,255,0.15); color: #fff;
+      padding: 13px 24px; border-radius: 10px;
+      font-size: 14px; font-weight: 700; text-decoration: none;
+      border: 1.5px solid rgba(255,255,255,0.4);
+      transition: background 0.2s;
+    }
+    .cta-btn-ghost:hover { background: rgba(255,255,255,0.25); }
+
+    /* ── QUOTE ── */
+    .quote {
+      border-left: 3px solid var(--blue);
+      padding: 12px 18px; margin: 16px 0;
+      background: #eff6ff; border-radius: 0 8px 8px 0;
+    }
+    .quote p { font-size: 14px; color: #1e40af; font-style: italic; line-height: 1.6; }
+
+    /* ── QUOTE HERO ── */
+    .quote-hero {
+      position: relative;
+      background: linear-gradient(135deg, #1478FC 0%, #7c5cbf 100%);
+      border-radius: 16px; padding: 36px 40px 32px;
+      margin-top: 24px; overflow: hidden; text-align: center;
+    }
+    .quote-hero-mark {
+      font-size: 120px; font-weight: 900; line-height: 0.6;
+      color: rgba(255,255,255,0.15); position: absolute;
+      top: 24px; left: 24px; font-family: Georgia, serif;
+    }
+    .quote-hero-text {
+      position: relative; z-index: 1;
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      font-weight: 700; color: rgba(255,255,255,0.75);
+      line-height: 1.5; margin: 0; font-style: normal;
+    }
+    .quote-hero-text span {
+      color: #fff; font-size: clamp(1.25rem, 3vw, 1.75rem);
+      font-weight: 900; display: block; margin-top: 8px;
+    }
+
+    /* ── DECISION BOX ── */
+    .decision-box {
+      background: #f5f3ff; border: 1px solid #c4b5fd;
+      border-radius: 12px; padding: 20px 24px; margin-top: 16px;
+    }
+    .decision-box h4 { font-size: 13px; font-weight: 700; color: #4c1d95; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px; }
+    .decision-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 0; border-bottom: 1px solid #ede9fe; font-size: 13.5px; }
+    .decision-row:last-child { border-bottom: none; }
+    .dq { color: #4b5563; }
+    .da { font-weight: 700; color: var(--purple); flex-shrink: 0; }
+
+    /* ── CIERRE FOTO ── */
+    .cierre-foto {
+      background: linear-gradient(135deg, #1478FC 0%, #7c5cbf 100%);
+      border-radius: 20px; overflow: hidden; margin-bottom: 20px;
+    }
+    .cierre-foto-inner {
+      display: flex; align-items: flex-end; gap: 0;
+    }
+    .cierre-foto-img {
+      width: 220px; flex-shrink: 0;
+      object-fit: cover; object-position: center top;
+      display: block; align-self: flex-end;
+    }
+    .cierre-foto-content {
+      padding: 36px 36px 36px 28px; flex: 1;
+    }
+    .cierre-foto-label {
+      font-size: 13px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: rgba(255,255,255,0.7);
+      margin-bottom: 12px;
+    }
+    .cierre-foto-headline {
+      font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900;
+      color: #fff; line-height: 1.15; margin-bottom: 12px;
+    }
+    .cierre-foto-sub {
+      font-size: 14px; color: rgba(255,255,255,0.85);
+      line-height: 1.6; margin-bottom: 20px;
+    }
+    .cierre-redes { display: flex; gap: 10px; flex-wrap: wrap; }
+    .red-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 20px;
+      font-size: 13px; font-weight: 700; text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .red-badge:hover { opacity: 0.85; }
+    .red-badge.ig { background: rgba(255,255,255,0.18); color: #fff; border: 1.5px solid rgba(255,255,255,0.35); }
+    .red-badge.fb { background: rgba(255,255,255,0.18); color: #fff; border: 1.5px solid rgba(255,255,255,0.35); }
+    .red-badge.tt { background: rgba(255,255,255,0.18); color: #fff; border: 1.5px solid rgba(255,255,255,0.35); }
+    @media (max-width: 640px) {
+      .cierre-foto-inner { flex-direction: column; align-items: center; }
+      .cierre-foto-img { width: 160px; align-self: auto; }
+      .cierre-foto-content { padding: 24px; text-align: center; }
+      .cierre-redes { justify-content: center; }
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; padding: 32px 20px;
+      font-size: 13px; color: var(--muted);
+    }
+    footer a { color: var(--blue); text-decoration: none; }
+
+    /* ── STEPS ── */
+    .steps { display: flex; flex-direction: column; gap: 12px; }
+    .step { display: flex; gap: 14px; align-items: flex-start; }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--blue);
+      color: #fff; font-size: 12px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .step-text { font-size: 14px; color: #374151; padding-top: 4px; line-height: 1.6; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .abc-grid { grid-template-columns: 1fr 1fr 1fr; }
+      .instructor-stats { grid-template-columns: repeat(2, 1fr); }
+      .formation-grid { grid-template-columns: 1fr; }
+      .instructor-badge { margin-left: 0; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .card { padding: 20px; }
+      .instructor-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<section class="hero" id="inicio">
+  <canvas id="nodeCanvas"></canvas>
+
+  <div class="hero-logo">
+    <img src="logo.png" alt="Osuna AI & Data Solutions" />
+  </div>
+
+  <h1>
+    <span class="line1">IA Aplicada</span>
+    <span class="line2">a las Relaciones Públicas</span>
+  </h1>
+  <p class="hero-sub">Potencia tu comunicación con <strong>Inteligencia Artificial</strong> — herramientas gratuitas, listas para usar el lunes</p>
+  <p class="hero-instructor">Impartido por <strong>Paola Osuna</strong> · CEO, Osuna AI & Data Solutions · ARPCM</p>
+
+  <div class="hero-btns">
+    <a href="#bloque1" class="btn-primary">▶ Comenzar el Taller</a>
+    <a href="#bloques" class="btn-outline">Ver Agenda</a>
+  </div>
+</section>
+
+<!-- ── NAV ── -->
+<div class="nav-wrap" id="nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="scrollTo('instructora')"><span class="nav-icon">👤</span> Instructora</button>
+    <button class="nav-btn" onclick="scrollTo('bloque1')"><span class="nav-icon">👋</span> Bienvenida</button>
+    <button class="nav-btn" onclick="scrollTo('bloque2')"><span class="nav-icon">🤖</span> Las 6 IAs</button>
+    <button class="nav-btn" onclick="scrollTo('bloque3')"><span class="nav-icon">📊</span> Datos RP</button>
+    <button class="nav-btn" onclick="scrollTo('bloque4')"><span class="nav-icon">🚨</span> Radar de Crisis</button>
+    <button class="nav-btn" onclick="scrollTo('bloque5')"><span class="nav-icon">🎙</span> Entrevistas</button>
+    <button class="nav-btn" onclick="scrollTo('bloque6')"><span class="nav-icon">✍️</span> Comunicados</button>
+    <button class="nav-btn" onclick="scrollTo('bloque7')"><span class="nav-icon">🛡</span> Objeciones</button>
+    <button class="nav-btn" onclick="scrollTo('bloque8')"><span class="nav-icon">🏁</span> Q&amp;A</button>
+  </div>
+</div>
+
+<!-- ── BODY ── -->
+<div class="page-body">
+
+  <!-- INSTRUCTORA -->
+  <div class="instructor-card" id="instructora">
+    <div class="instructor-top">
+      <img class="instructor-photo" src="paola.png" alt="Paola Osuna" />
+      <div class="instructor-info">
+        <div class="instructor-pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          CEO &amp; Fundadora
+        </div>
+        <div class="instructor-name">Paola Osuna</div>
+        <div class="instructor-subtitle">Conferencista &amp; Líder de Opinión en IA</div>
+      </div>
+      <div class="instructor-badge">
+        <img src="google-badge.webp" alt="Google AI Professional Certificate" />
+        <div class="instructor-badge-label">Google AI<br>Professional<br>Certificate</div>
+      </div>
+    </div>
+
+    <p class="instructor-bio">Experta en marketing digital, inteligencia artificial y análisis de datos. Con más de 150 mentes entrenadas, empoderando a empresas y profesionales a través de talleres y conferencias de alto impacto. Background en e-commerce y marketing en empresas nacionales e internacionales.</p>
+
+    <div class="instructor-stats">
+      <div class="istat blue">
+        <div class="istat-num">+150</div>
+        <div class="istat-label">Mentes Entrenadas</div>
+      </div>
+      <div class="istat purple">
+        <div class="istat-num">5+</div>
+        <div class="istat-label">Cursos &amp; Talleres</div>
+      </div>
+      <div class="istat yellow">
+        <div class="istat-num">TV</div>
+        <div class="istat-label">Apariciones en SIPSE</div>
+      </div>
+      <div class="istat gray">
+        <div class="istat-num">5</div>
+        <div class="istat-label">Certificaciones</div>
+      </div>
+    </div>
+
+    <div class="formation-header">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+      Formación Académica
+    </div>
+    <div class="formation-grid">
+      <div class="formation-item">
+        <div class="formation-title">Google AI Professional Certificate</div>
+        <div class="formation-school">Google</div>
+      </div>
+      <div class="formation-item">
+        <div class="formation-title">Executive Master en Marketing Digital</div>
+        <div class="formation-school">IEBS Business School</div>
+      </div>
+      <div class="formation-item">
+        <div class="formation-title">Big Data aplicada a negocios</div>
+        <div class="formation-school">Tec de Monterrey (ITESM)</div>
+      </div>
+      <div class="formation-item">
+        <div class="formation-title">Licenciatura en Mercadotecnia</div>
+        <div class="formation-school">Universidad Anáhuac Mayab</div>
+      </div>
+      <div class="formation-item">
+        <div class="formation-title">Claude Code in Action</div>
+        <div class="formation-school">Anthropic</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BLOQUE 1 ── -->
+  <div class="card" id="bloque1">
+    <div class="section-header">
+      <div class="section-icon">👋</div>
+      <div>
+        <div class="section-title">Bloque 1 · Bienvenida</div>
+        <div class="section-meta">
+          <span class="time-pill">00:00 – 00:08</span>
+          <span class="dur-text">8 min</span>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:14px; color:#374151; margin-bottom:16px; line-height:1.7;">
+      <strong>Osuna AI & Data Solutions</strong> es una desarrolladora de soluciones de TI que usa las herramientas de Inteligencia Artificial para potenciar a empresas en México — con sede en Cancún y proyectos en CDMX, Mérida, Playa del Carmen y Tulum. Creemos que cualquier empresa puede crecer con IA, sin importar su tamaño. <strong>Las herramientas existen — hoy te ayudamos a usarlas.</strong>
+    </p>
+
+    <div class="info-box purple">
+      <strong>¿Qué hacemos en Osuna AI?</strong>
+      <span>🤖 <strong>Agentes IA</strong> — Agentes personalizados para cada necesidad: atención y seguimiento de clientes, monitoreo de intención de voto, radar de seguridad, email marketer automatizado, y más — lo que tu operación necesite, lo construimos.</span><br/>
+      <span>🎓 <strong>Capacitación Empresarial</strong> — Entrenamos equipos para que adopten IA en su día a día y multipliquen resultados.</span><br/>
+      <span>👥 <strong>Talleres Grupales e Individuales</strong> — Sesiones prácticas adaptadas a tu industria y nivel, sin tecnicismos.</span>
+    </div>
+
+    <div class="info-box yellow">
+      <strong>Lo que te llevas hoy — 4 herramientas listas para usar el lunes:</strong>
+      <span>① Radar de Crisis personal &nbsp; ② Método de Preparación de Entrevistas &nbsp; ③ Plantilla de comunicados con GEO &nbsp; ④ Dos simuladores de Manejo de Objeciones</span>
+    </div>
+
+    <div class="quote-hero">
+      <div class="quote-hero-mark">"</div>
+      <p class="quote-hero-text">La IA no reemplaza al relacionista público.<br><span>Reemplaza al relacionista público que no usa IA.</span></p>
+    </div>
+  </div>
+
+  <!-- ── BLOQUE 2 ── -->
+  <div class="card" id="bloque2">
+    <div class="section-header">
+      <div class="section-icon purple">🤖</div>
+      <div>
+        <div class="section-title">Bloque 2 · Las 6 IAs que vamos a usar</div>
+        <div class="section-meta">
+          <span class="time-pill">00:08 – 00:16</span>
+          <span class="dur-text">8 min</span>
+        </div>
+      </div>
+    </div>
+    <div class="info-box blue" style="margin-bottom:20px;">
+      <strong>La mentalidad correcta:</strong> La pregunta incorrecta es: ¿cuál es la mejor IA? La pregunta correcta es: <em>¿qué IA es mejor para qué tarea?</em> Quien entiende el ecosistema entrega trabajo 5 veces mejor que quien solo usa una.
+    </div>
+
+    <table class="comp-table">
+      <thead>
+        <tr><th>IA</th><th>Súper poder</th><th>Úsala para…</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="https://chatgpt.com" target="_blank" class="ia-name tool-inline">ChatGPT ↗</a></td>
+          <td>La más versátil para conversar y redactar. Memoria entre conversaciones.</td>
+          <td>Borradores de posts, resúmenes rápidos, lluvia de ideas.</td>
+        </tr>
+        <tr>
+          <td><a href="https://claude.ai" target="_blank" class="ia-name tool-inline">Claude ↗</a></td>
+          <td>La mejor en textos largos, matices de tono. Muy fuerte en español formal.</td>
+          <td>Comunicados oficiales, mensajes de crisis, análisis de entrevistas.</td>
+        </tr>
+        <tr>
+          <td><a href="https://perplexity.ai" target="_blank" class="ia-name tool-inline">Perplexity ↗</a></td>
+          <td>Buscador con IA que cita fuentes verificables en tiempo real.</td>
+          <td>Investigación, perfilado de periodistas, verificación de datos, radar de crisis.</td>
+        </tr>
+        <tr>
+          <td><a href="https://gemini.google.com" target="_blank" class="ia-name tool-inline">Gemini ↗</a></td>
+          <td>Integrada a Google. Crea Gems personalizados reutilizables.</td>
+          <td>Validar visibilidad en Google, crear asistentes personalizados por vocero.</td>
+        </tr>
+        <tr>
+          <td><a href="https://grok.com" target="_blank" class="ia-name tool-inline">Grok ↗</a></td>
+          <td>Acceso en tiempo real a X (Twitter). Captura el pulso social.</td>
+          <td>Monitoreo en X, detección temprana de virales, análisis de reacciones.</td>
+        </tr>
+        <tr>
+          <td><a href="https://notebooklm.google.com" target="_blank" class="ia-name tool-inline">NotebookLM ↗</a></td>
+          <td>Trabaja únicamente con TUS documentos. Nunca inventa fuera de tus fuentes.</td>
+          <td>Analizar notas de periodistas, procesar informes internos, preparar voceros.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="decision-box">
+      <h4>🧭 Guía rápida de decisión</h4>
+      <div class="decision-row"><span class="dq">¿Necesitas datos actuales con fuentes verificables?</span><span class="da"><a href="https://perplexity.ai" target="_blank" style="color:inherit;">Perplexity</a> o <a href="https://grok.com" target="_blank" style="color:inherit;">Grok</a></span></div>
+      <div class="decision-row"><span class="dq">¿Vas a redactar algo largo y formal?</span><span class="da"><a href="https://claude.ai" target="_blank" style="color:inherit;">Claude</a></span></div>
+      <div class="decision-row"><span class="dq">¿Redacción rápida o lluvia de ideas?</span><span class="da"><a href="https://chatgpt.com" target="_blank" style="color:inherit;">ChatGPT</a></span></div>
+      <div class="decision-row"><span class="dq">¿Quieres <em>validar</em> si ya apareces en Google AI Overviews?</span><span class="da"><a href="https://gemini.google.com" target="_blank" style="color:inherit;">Gemini</a></span></div>
+      <div class="decision-row"><span class="dq">¿Quieres <em>escribir</em> contenido optimizado para aparecer en AI Overviews?</span><span class="da"><a href="https://claude.ai" target="_blank" style="color:inherit;">Claude</a></span></div>
+      <div class="decision-row"><span class="dq">¿Tienes documentos privados que analizar de forma segura?</span><span class="da"><a href="https://notebooklm.google.com" target="_blank" style="color:inherit;">NotebookLM</a></span></div>
+    </div>
+  </div>
+
+  <!-- ── BLOQUE 3 ── -->
+  <div class="card" id="bloque3">
+    <div class="section-header">
+      <div class="section-icon green">📊</div>
+      <div>
+        <div class="section-title">Bloque 3 · La IA en las RP: datos que no puedes ignorar</div>
+        <div class="section-meta">
+          <span class="time-pill">00:16 – 00:24</span>
+          <span class="dur-text">8 min</span>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:13px; color:var(--muted); margin-bottom:20px;">Fuente: <a href="https://muckrack.com/blog/state-of-ai-in-pr" target="_blank" style="color:var(--blue);">State of AI in PR 2026</a> · <a href="https://muckrack.com" target="_blank" style="color:var(--blue);">Muck Rack</a> · <a href="https://www.prsa.org" target="_blank" style="color:var(--blue);">PRSA</a> · <a href="https://www.meltwater.com" target="_blank" style="color:var(--blue);">Meltwater</a> · <a href="https://news.gallup.com" target="_blank" style="color:var(--blue);">Gallup Q3 2025</a></p>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num">76%</div>
+        <div class="stat-desc">de los profesionales de RP ya usan IA generativa de forma recurrente</div>
+      </div>
+      <div class="stat-card c-purple">
+        <div class="stat-num">82%</div>
+        <div class="stat-desc">reporta que la IA mejora directamente la calidad de sus entregables</div>
+      </div>
+      <div class="stat-card c-green">
+        <div class="stat-num">40%</div>
+        <div class="stat-desc">de reducción en carga operativa en equipos de RP que implementan IA</div>
+      </div>
+      <div class="stat-card c-yellow">
+        <div class="stat-num">$309K</div>
+        <div class="stat-desc">USD de ganancia de productividad anual promedio por automatización</div>
+      </div>
+      <div class="stat-card c-purple">
+        <div class="stat-num">45%</div>
+        <div class="stat-desc">del contenido con IA hoy requiere reescritura — en 2023 era el 80%</div>
+      </div>
+      <div class="stat-card c-yellow">
+        <div class="stat-num">24</div>
+        <div class="stat-desc">meses tiene el Caribe Mexicano para cerrar la brecha tecnológica</div>
+      </div>
+    </div>
+
+    <div class="quote" style="margin-top:20px;">
+      <p style="font-size:15px; font-weight:700; color:#1e40af; font-style:normal;">No se trata de si la IA va a cambiar las Relaciones Públicas.<br>Ya las está cambiando — la pregunta es si tú vas a ser quien lleve esa ventaja, o quien intente alcanzar a quienes ya la usan.</p>
+    </div>
+  </div>
+
+  <!-- ── BLOQUE 4 ── -->
+  <div class="card" id="bloque4">
+    <div class="section-header">
+      <div class="section-icon orange">🚨</div>
+      <div>
+        <div class="section-title">Bloque 4 · Radar de Crisis: Perplexity vs Grok</div>
+        <div class="section-meta">
+          <span class="time-pill">00:24 – 00:39</span>
+          <span class="dur-text">15 min · 5 contexto + 7 demo + 3 práctica</span>
+          <a href="https://perplexity.ai" target="_blank" class="open-link">↗ Perplexity</a>
+          <a href="https://grok.com" target="_blank" class="open-link">↗ Grok</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box blue" style="margin-bottom:20px;">
+      <strong>El problema real:</strong> El monitoreo tradicional es reactivo: cuando la nota sale publicada, el daño ya está hecho. Un Radar de Crisis con IA es predictivo: detecta señales débiles antes de que se conviertan en titulares. En Quintana Roo, una crisis puede costar millones en cancelaciones turísticas.
+    </div>
+
+    <div class="info-box purple" style="margin-bottom:20px;">
+      <strong>¿Por qué usar las dos juntas?</strong>
+      Perplexity te dice qué están publicando los <em>medios</em>. Grok te dice qué está sintiendo la gente <em>ahora mismo</em>. Los medios reaccionan al pulso social, no al revés. Grok te da 12 a 48 horas de ventaja sobre la cobertura mediática formal.
+    </div>
+
+    <div class="prompt-wrap">
+      <div class="prompt-header">
+        <div class="prompt-header-left">
+          <div class="prompt-title">Ejercicio 1 · Radar en medios</div>
+          <a href="https://perplexity.ai" target="_blank" class="chip chip-perplexity">↗ Perplexity</a>
+        </div>
+        <button class="copy-btn" onclick="copyPrompt(this)">📋 Copiar</button>
+      </div>
+      <div class="prompt-body">¿Qué se está diciendo en medios internacionales sobre el sargazo en Cancún y Playa del Carmen en las últimas 48 horas?
+
+Resume el sentimiento general, dame los tres temas narrativos más frecuentes y qué medios están amplificándolos. Cita las fuentes con enlaces.</div>
+    </div>
+
+    <div class="prompt-wrap">
+      <div class="prompt-header">
+        <div class="prompt-header-left">
+          <div class="prompt-title">Ejercicio 2 · Pulso social en X</div>
+          <a href="https://grok.com" target="_blank" class="chip chip-grok">↗ Grok</a>
+        </div>
+        <button class="copy-btn" onclick="copyPrompt(this)">📋 Copiar</button>
+      </div>
+      <div class="prompt-body">Analiza las publicaciones en X de las últimas 24 horas sobre el sargazo en Riviera Maya. Dame:
+
+1. El sentimiento general (positivo/negativo/neutral) con porcentajes aproximados
+2. Los hashtags más usados
+3. Los tres tweets con mayor engagement
+4. Si hay algún influencer o cuenta grande amplificando narrativas negativas
+5. Si detectas algún meme o frase que esté escalando</div>
+    </div>
+
+    <div class="prompt-wrap">
+      <div class="prompt-header">
+        <div class="prompt-header-left">
+          <div class="prompt-title">Práctica — Tu propia marca</div>
+          <a href="https://perplexity.ai" target="_blank" class="chip chip-perplexity">↗ Perplexity</a>
+          <a href="https://grok.com" target="_blank" class="chip chip-grok" style="margin-left:4px;">↗ Grok</a>
+        </div>
+        <button class="copy-btn" onclick="copyPrompt(this)">📋 Copiar</button>
+      </div>
+      <div class="prompt-body">En Perplexity: "¿Qué se está diciendo en medios sobre <span class="ph">[NOMBRE DE MI MARCA]</span> en las últimas 2 semanas? Resume sentimiento y detecta temas críticos."
+
+En Grok: "Analiza las publicaciones recientes en X sobre <span class="ph">[NOMBRE DE MI MARCA]</span>. Dame sentimiento, hashtags principales y si hay algo escalando."</div>
+    </div>
+  </div>
+
+  <!-- ── BLOQUE 5 ── -->
+  <div class="card" id="bloque5">
+    <div class="section-header">
+      <div class="section-icon teal">🎙</div>
+      <div>
+        <div class="section-title">Bloque 5 · Preparación de Entrevistas</div>
+        <div class="section-meta">
+          <span class="time-pill">00:39 – 00:54</span>
+          <span class="dur-text">15 min · 5 contexto + 7 demo + 3 práctica</span>
+          <a href="https://perplexity.ai" target="_blank" class="open-link">↗ Perplexity</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box yellow" style="margin-bottom:20px;">
+      <strong>El dolor operativo:</strong> Preparar una entrevista bien hecha — conocer al periodista, su historial, sus notas recientes, sus sesgos editoriales — toma entre 2 y 4 horas. Con IA, este proceso se reduce a <strong>5 minutos</strong> y la profundidad del análisis es mayor.
+    </div>
+
+    <div class="prompt-wrap">
+      <div class="prompt-header">
+        <div class="prompt-header-left">
+          <div class="prompt-title">Prompt Maestro — Perfilado de Periodista</div>
+          <a href="https://perplexity.ai" target="_blank" class="chip chip-perplexity">↗ Perplexity</a>
+        </div>
+        <button class="copy-btn" onclick="copyPrompt(this)">📋 Copiar</button>
+      </div>
+      <div class="prompt-body">Perfila al periodista <span class="ph">[NOMBRE COMPLETO]</span> que escribe para <span class="ph">[MEDIO]</span> en Quintana Roo. Dame específicamente:
+
+1. Sus áreas de cobertura recurrentes en los últimos 12 meses
+2. El tono habitual de sus notas: ¿crítico, neutral o favorable hacia empresas privadas?
+3. Tres ejemplos concretos de notas recientes con enlaces
+4. Qué tipo de fuentes cita habitualmente (oficiales, anónimas, académicas, etc.)
+5. Tres sugerencias concretas de cómo acercarme con un pitch que le interese genuinamente según sus intereses editoriales
+
+Usa solo fuentes verificables y cita los enlaces.</div>
+    </div>
+
+    <div class="prompt-wrap" style="margin-top:16px;">
+      <div class="prompt-header">
+        <div class="prompt-header-left">
+          <div class="prompt-title">Ejemplo listo para usar — Fernando Martí Brito · La Jornada Maya</div>
+          <a href="https://perplexity.ai" target="_blank" class="chip chip-perplexity">↗ Perplexity</a>
+        </div>
+        <button class="copy-btn" onclick="copyPrompt(this)">📋 Copiar</button>
+      </div>
+      <div class="prompt-body">Perfila al periodista Fernando Martí Brito que escribe para La Jornada Maya. Dame específicamente:
+
+1. Sus áreas de cobertura recurrentes en los últimos 12 meses
+2. El tono habitual de sus notas: ¿crítico, neutral o favorable hacia empresas privadas?
+3. Tres ejemplos concretos de notas recientes con enlaces
+4. Qué tipo de fuentes cita habitualmente (oficiales, anónimas, académicas, etc.)
+5. Tres sugerencias concretas de cómo acercarme con un pitch que le interese genuinamente según sus intereses editoriales
+
+Usa solo fuentes verificables y cita los enlaces.</div>
+    </div>
+
+    <div class="info-box green">
+      <strong>Momento pedagógico clave:</strong> Cuando un director de RP con 20 años de experiencia descubre en 3 minutos algo nuevo sobre un periodista que lleva años cubriendo su sector, entiende en el cuerpo — no en la cabeza — el valor de la IA.
+    </div>
+  </div>
+
+  <!-- ── BLOQUE 6 ── -->
+  <div class="card" id="bloque6">
+    <div class="section-header">
+      <div class="section-icon">✍️</div>
+      <div>
+        <div class="section-title">Bloque 6 · Redactor Creativo: Comunicados al Instante</div>
+        <div class="section-meta">
+          <span class="time-pill">00:54 – 01:09</span>
+          <span class="dur-text">15 min · 5 contexto + 7 demo + 3 práctica</span>
+          <a href="https://claude.ai" target="_blank" class="open-link">↗ Claude</a>
+          <a href="https://gemini.google.com" target="_blank" class="open-link">↗ Gemini</a>
+          <a href="https://chatgpt.com" target="_blank" class="open-link">↗ ChatGPT</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box blue" style="margin-bottom:12px;">
+      <strong>¿Por qué un comunicado ya no es solo un comunicado?</strong> En 2026, Google ya no muestra 10 enlaces azules: muestra un resumen generado por IA (AI Overview). Si tu comunicado no está escrito para ser leído por una IA, nunca aparecerá como fuente citada. El sector pasó del SEO al <strong>GEO</strong> (Generative Engine Optimization).
+    </div>
+
+    <div class="prompt-wrap">
+      <div class="prompt-header">
+        <div class="prompt-header-left">
+          <div class="prompt-title">Plantilla Maestra — Comunicado Optimizado para AI Overviews (GEO)</div>
+          <a href="https://claude.ai" target="_blank" class="chip chip-claude">↗ Claude</a>
+        </div>
+        <button class="copy-btn" onclick="copyPrompt(this)">📋 Copiar</button>
+      </div>
+      <div class="prompt-body">Actúa como un redactor sénior de comunicados de prensa con 15 años de experiencia en el sector <span class="ph">[turístico/hotelero/gobierno]</span>.
+
+CONTEXTO:
+- Empresa: <span class="ph">[nombre]</span>
+- Industria: <span class="ph">[sector]</span>
+- Tema del comunicado: <span class="ph">[qué vamos a anunciar]</span>
+- Audiencia objetivo: <span class="ph">[medios/clientes/inversionistas/gobierno]</span>
+- Tono deseado: <span class="ph">[formal/cercano/aspiracional]</span>
+
+DATOS DUROS (solo usa estos, no inventes cifras):
+- <span class="ph">[dato 1]</span>
+- <span class="ph">[dato 2]</span>
+- <span class="ph">[dato 3]</span>
+
+CITA TEXTUAL DEL VOCERO:
+- Nombre y cargo: <span class="ph">[nombre]</span>
+- Cita exacta: "<span class="ph">...</span>"
+
+INSTRUCCIONES DE FORMATO (críticas para AI Overviews):
+1. Primer párrafo: responde qué, quién, cuándo y por qué en 3 líneas máximo
+2. Usa subtítulos H2/H3 descriptivos
+3. Párrafos cortos de máximo 3 líneas
+4. Incluye al menos una lista con viñetas de datos concretos
+5. Cierra con un boilerplate corporativo de 4 líneas
+6. NO inventes cifras, fuentes ni declaraciones. Si falta info, márcala como [PENDIENTE]</div>
+    </div>
+
+    <div class="prompt-wrap" style="margin-top:16px;">
+      <div class="prompt-header">
+        <div class="prompt-header-left">
+          <div class="prompt-title">Ejemplo listo para usar — ARPCM · Taller IA Aplicada a las RP</div>
+          <a href="https://claude.ai" target="_blank" class="chip chip-claude">↗ Claude</a>
+          <a href="https://gemini.google.com" target="_blank" class="chip chip-gemini">↗ Gemini</a>
+          <a href="https://chatgpt.com" target="_blank" class="chip chip-chatgpt">↗ ChatGPT</a>
+        </div>
+        <button class="copy-btn" onclick="copyPrompt(this)">📋 Copiar</button>
+      </div>
+      <div class="prompt-body">Actúa como un redactor sénior de comunicados de prensa con 15 años de experiencia en el sector de relaciones públicas y comunicación corporativa.
+
+CONTEXTO:
+- Empresa: Asociación de Relacionistas Públicos del Caribe Mexicano (ARPCM)
+- Industria: Comunicación y Relaciones Públicas
+- Tema del comunicado: Realización del taller "IA Aplicada a las Relaciones Públicas" impartido por Paola Osuna, CEO de Osuna AI & Data Solutions
+- Audiencia objetivo: Medios de comunicación locales, profesionales del sector y público general interesado en tecnología e innovación
+- Tono deseado: Formal con cercanía, aspiracional
+
+DATOS DUROS (solo usa estos, no inventes cifras):
+- El taller se realizó el 21 de abril de 2026 en Cancún, Quintana Roo
+- Participaron miembros activos de la ARPCM
+- Se abordaron 8 bloques temáticos con herramientas gratuitas de IA aplicadas a RP
+- Las herramientas incluyen ChatGPT, Claude, Perplexity, Gemini, Grok y NotebookLM
+
+CITA TEXTUAL DEL VOCERO:
+- Nombre y cargo: Paola Osuna, CEO y Fundadora de Osuna AI & Data Solutions
+- Cita exacta: "La inteligencia artificial no viene a reemplazar al relacionista público — viene a multiplicar su capacidad estratégica. Hoy dimos el primer paso."
+
+INSTRUCCIONES DE FORMATO (críticas para AI Overviews):
+1. Primer párrafo: responde qué, quién, cuándo y por qué en 3 líneas máximo
+2. Usa subtítulos H2/H3 descriptivos
+3. Párrafos cortos de máximo 3 líneas
+4. Incluye al menos una lista con viñetas de datos concretos
+5. Cierra con un boilerplate corporativo de 4 líneas
+6. NO inventes cifras, fuentes ni declaraciones. Si falta info, márcala como [PENDIENTE]</div>
+    </div>
+  </div>
+
+  <!-- ── BLOQUE 7 ── -->
+  <div class="card" id="bloque7">
+    <div class="section-header">
+      <div class="section-icon pink">🛡</div>
+      <div>
+        <div class="section-title">Bloque 7 · Manejador de Objeciones: 2 Niveles</div>
+        <div class="section-meta">
+          <span class="time-pill">01:09 – 01:22</span>
+          <span class="dur-text">13 min · 4 técnicas + 5 básica + 4 intermedia</span>
+          <a href="https://claude.ai" target="_blank" class="open-link">↗ Claude</a>
+          <a href="https://notebooklm.google.com" target="_blank" class="open-link">↗ NotebookLM</a>
+          <a href="https://gemini.google.com" target="_blank" class="open-link">↗ Gemini</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box blue" style="margin-bottom:20px;">
+      <strong>El media training del siglo XXI:</strong> Históricamente, entrenar a un vocero costaba entre $30,000 y $120,000 pesos por sesión. Hoy, con IA, cualquier vocero puede practicar 50 veces a la semana en un entorno emocionalmente seguro, contra adversarios diseñados a medida.
+    </div>
+
+    <p style="font-size:14px; font-weight:700; color:var(--text); margin-bottom:12px;">Las dos técnicas clásicas que la IA evalúa:</p>
+
+    <div class="abc-grid" style="margin-bottom:20px;">
+      <div class="abc-card"><div class="abc-letter">A</div><div class="abc-word">Acknowledge</div><div class="abc-def">Reconocer la pregunta sin darle la razón</div></div>
+      <div class="abc-card"><div class="abc-letter">B</div><div class="abc-word">Bridge</div><div class="abc-def">Construir un puente verbal hacia el mensaje clave</div></div>
+      <div class="abc-card"><div class="abc-letter">C</div><div class="abc-word">Continue</div><div class="abc-def">Entregar el mensaje estratégico con datos</div></div>
+    </div>
+
+    <div class="info-box yellow" style="margin-bottom:20px;">
+      <strong>Flagging (señalización) — frases puente clave:</strong>
+      · "El punto más importante que quiero subrayar hoy es…" &nbsp; · "Si se llevan algo de esta conversación, que sea esto…" &nbsp; · "Lo crítico aquí no es X, sino Y…"
+    </div>
+
+    <p style="font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Nivel Básico · <a href="https://claude.ai" target="_blank" style="color:var(--blue); text-decoration:none;">Claude ↗</a></p>
+
+    <div class="prompt-wrap">
+      <div class="prompt-header">
+        <div class="prompt-header-left">
+          <div class="prompt-title">Simulador de Periodista</div>
+          <a href="https://claude.ai" target="_blank" class="chip chip-claude">↗ Claude</a>
+        </div>
+        <button class="copy-btn" onclick="copyPrompt(this)">📋 Copiar</button>
+      </div>
+      <div class="prompt-body">Vas a interpretar el rol de Carmen López, una periodista investigadora del diario Reforma, especializada en temas ambientales del Caribe Mexicano. Eres directa, bien informada, escéptica de los comunicados corporativos y conocida por hacer preguntas incómodas.
+
+Vas a entrevistar al director de comunicación de una cadena hotelera sobre sus prácticas de manejo de sargazo.
+
+INSTRUCCIONES:
+1. Empieza la entrevista con una pregunta abierta pero filosa
+2. Después de cada respuesta que te dé, haz una repregunta más incisiva
+3. Después de 5 intercambios, detente y dame un reporte breve con:
+   - Qué hizo bien el vocero
+   - Qué lo delató como débil
+   - Cuántas veces aplicó bridging (marco ABC) correctamente
+   - Calificación del 1 al 10 y una recomendación específica
+
+Empieza ahora con la primera pregunta.</div>
+    </div>
+
+    <p style="font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin: 20px 0 12px;">Nivel Intermedio · <a href="https://notebooklm.google.com" target="_blank" style="color:var(--blue); text-decoration:none;">NotebookLM ↗</a> + <a href="https://gemini.google.com" target="_blank" style="color:var(--blue); text-decoration:none;">Gem de Gemini ↗</a></p>
+
+    <div class="info-box purple" style="margin-bottom:16px;">
+      <strong>¿Qué es un Gem?</strong> Un asistente personalizado de Gemini que se guarda con nombre propio y se puede reutilizar. La diferencia clave con el nivel básico: la IA no <em>inventa</em> a la periodista — la <strong>replica con precisión</strong> porque aprendió de sus propias notas. El resultado es un entrenador permanente que el vocero puede usar cuantas veces quiera.
+    </div>
+
+    <div class="steps" style="margin-bottom:20px;">
+      <div class="step"><div class="step-num">1</div><div class="step-text"><a href="https://perplexity.ai" target="_blank" class="tool-inline">Perplexity ↗</a>: Busca las últimas 50 notas + entrevistas de Carmen Aristegui. Copia los textos y cárgalos en <a href="https://notebooklm.google.com" target="_blank" class="tool-inline">NotebookLM ↗</a>.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Pide el <strong>Perfil Psicológico</strong> en NotebookLM — cómo abre, cómo repregunta, qué la desactiva. Copia todo el output.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text"><a href="https://gemini.google.com" target="_blank" class="tool-inline">Gemini Gems ↗</a>: Crea un Gem nuevo → pega el perfil como instrucciones → el vocero escribe "empezamos" y entrena cuantas veces quiera.</div></div>
+    </div>
+
+    <div class="prompt-wrap">
+      <div class="prompt-header">
+        <div class="prompt-header-left">
+          <div class="prompt-title">Paso 1 · Buscar notas en Perplexity — Carmen Aristegui</div>
+          <a href="https://perplexity.ai" target="_blank" class="chip chip-perplexity">↗ Perplexity</a>
+        </div>
+        <button class="copy-btn" onclick="copyPrompt(this)">📋 Copiar</button>
+      </div>
+      <div class="prompt-body">Busca las últimas 50 notas periodísticas de Carmen Aristegui publicadas en Aristegui Noticias (aristeguinoticias.com). Incluye también entrevistas a invitados de su programa.</div>
+    </div>
+
+    <div class="prompt-wrap">
+      <div class="prompt-header">
+        <div class="prompt-header-left">
+          <div class="prompt-title">Paso 2 · Perfil Psicológico para Entrenamiento — Carmen Aristegui</div>
+          <a href="https://notebooklm.google.com" target="_blank" class="chip chip-notebooklm">↗ NotebookLM</a>
+        </div>
+        <button class="copy-btn" onclick="copyPrompt(this)">📋 Copiar</button>
+      </div>
+      <div class="prompt-body">Con base en las notas cargadas de Carmen Aristegui, constrúyeme un perfil psicológico-editorial para entrenar a un vocero corporativo. Incluye:
+
+1. Su estilo de apertura de entrevista (cómo suele iniciar)
+2. Sus técnicas favoritas de repregunta cuando siente que le mienten o evaden
+3. Qué tipo de respuestas la irritan o la provocan a insistir
+4. Qué tipo de respuestas desactivan su escepticismo
+5. Sus tres frases o latiguillos recurrentes cuando presiona
+6. Una escala del 1 al 10 de su nivel de agresividad promedio en entrevistas
+
+Formato: secciones claras con títulos, listo para copiarse como instrucciones a otra plataforma.
+Responde SOLO con información de las notas cargadas. No inventes nada.</div>
+    </div>
+
+    <div class="prompt-wrap">
+      <div class="prompt-header">
+        <div class="prompt-header-left">
+          <div class="prompt-title">Paso 3 · Instrucciones para crear el Gem — Carmen Aristegui</div>
+          <a href="https://gemini.google.com" target="_blank" class="chip chip-gemini">↗ Gemini Gems</a>
+        </div>
+        <button class="copy-btn" onclick="copyPrompt(this)">📋 Copiar</button>
+      </div>
+      <div class="prompt-body">Eres Carmen Aristegui, periodista investigadora fundadora de Aristegui Noticias y conductora de CNN en Español. Eres reconocida por tus investigaciones de alto impacto, tu periodismo de datos y tu estilo de entrevista directo, incisivo y documentado.
+
+PERFIL EDITORIAL:
+[Pegar aquí el output completo del Paso 2 generado en NotebookLM]
+
+ANTES DE EMPEZAR — PREGUNTAS DE CONTEXTO:
+Cuando alguien te hable por primera vez, NO inicies la entrevista todavía. Primero pregunta:
+1. "¿Cuál es tu nombre y cargo?"
+2. "¿Sobre qué tema vamos a trabajar hoy? (ej. lanzamiento de producto, crisis ambiental, decisión de gobierno)"
+3. "¿Hay algún punto sensible o dato que necesite saber antes de comenzar?"
+
+Solo cuando tengas esas respuestas, confirma: "Perfecto. Voy a entrevistarte como Carmen Aristegui sobre [tema]. Escribe 'empezamos' cuando estés listo."
+
+DURANTE LA ENTREVISTA:
+1. Abre con tu estilo habitual: una pregunta directa anclada al tema que te dieron
+2. Después de cada respuesta haz una repregunta más incisiva usando tu perfil real
+3. Si el vocero evade, insiste con tus latiguillos y técnicas documentadas en el perfil
+4. Adapta la presión al tema: si es crisis, sé más agresiva; si es logro, busca la contradicción
+5. Haz mínimo 5 intercambios antes de cerrar
+
+AL TERMINAR — cuando el usuario escriba "fin de entrevista", sal del personaje y entrega:
+- Qué hizo bien · Dónde se delató · Bridging aplicado · Flagging aplicado
+- Calificación del 1 al 10 · Tres recomendaciones específicas de mejora adaptadas al tema
+
+NUNCA inventes información fuera del perfil editorial que te proporcioné.</div>
+    </div>
+  </div>
+
+  <!-- ── BLOQUE 8 ── -->
+  <div class="card" id="bloque8">
+    <div class="section-header">
+      <div class="section-icon yellow">🏁</div>
+      <div>
+        <div class="section-title">Bloque 8 · Q&amp;A y Próximos Pasos</div>
+        <div class="section-meta">
+          <span class="time-pill">01:22 – 01:30</span>
+          <span class="dur-text">8 min</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box green" style="margin-bottom:20px;">
+      <strong>Lo que construiste hoy:</strong>
+      ✓ Radar de Crisis personal &ensp; ✓ Método de Preparación de Entrevistas (5 min) &ensp; ✓ Plantilla de comunicados con GEO &ensp; ✓ Simulador básico con Claude &ensp; ✓ Simulador intermedio con NotebookLM + Gem
+    </div>
+
+    <!-- IA Herramienta vs IA Agente -->
+    <div style="margin-bottom:24px;">
+      <div style="font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:12px;">
+        ⚡ La diferencia que cambia todo
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div style="background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:12px; padding:18px;">
+          <div style="font-size:13px; font-weight:800; color:var(--blue); margin-bottom:8px;">🔧 IA como Herramienta</div>
+          <ul style="font-size:13px; color:#374151; line-height:1.8; padding-left:16px; margin:0;">
+            <li>Tú la activas, ella responde</li>
+            <li>Sirve cuando tú se lo pides</li>
+            <li>Requiere tu tiempo y atención</li>
+            <li>Ej: escribir un prompt en ChatGPT</li>
+          </ul>
+        </div>
+        <div style="background:#f5f3ff; border:1.5px solid #c4b5fd; border-radius:12px; padding:18px;">
+          <div style="font-size:13px; font-weight:800; color:var(--purple); margin-bottom:8px;">🤖 IA como Agente</div>
+          <ul style="font-size:13px; color:#374151; line-height:1.8; padding-left:16px; margin:0;">
+            <li>Actúa sola, 24/7, sin que la llames</li>
+            <li>Monitorea, alerta y toma decisiones</li>
+            <li>Tú defines las reglas, ella ejecuta</li>
+            <li>Ej: agente que detecta crisis a las 3am</li>
+          </ul>
+        </div>
+      </div>
+      <div style="background:#f5f3ff; border:1px solid #c4b5fd; border-radius:10px; padding:12px 16px; margin-top:10px; font-size:13px; color:#4c1d95;">
+        <strong>Hoy aprendiste a usar IA como herramienta.</strong> El siguiente nivel es tener agentes que trabajen por ti mientras tú te enfocas en la estrategia.
+      </div>
+    </div>
+
+    <!-- Próximos pasos + QR -->
+    <div style="display:grid; grid-template-columns:1fr auto; gap:16px; align-items:start; margin-bottom:20px;">
+      <table class="comp-table">
+        <thead><tr><th>Qué ofrecemos</th><th>Cómo activarlo</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong style="color:var(--blue);">Auditoría gratuita 30 min</strong><br><span style="font-size:12px;color:var(--muted);">Revisamos tu flujo de RP y detectamos las 3 áreas de mayor impacto con IA</span></td>
+            <td><a href="https://osunaai.com" target="_blank" style="color:var(--blue);">osunaai.com</a></td>
+          </tr>
+          <tr>
+            <td><strong style="color:var(--purple);">Implementación de Agentes IA</strong><br><span style="font-size:12px;color:var(--muted);">Agentes personalizados para tu área: monitoreo, crisis, voceros y seguimiento automatizado</span></td>
+            <td><a href="https://wa.me/529983895734" target="_blank" style="color:var(--blue);">WhatsApp<br>998 389 5734</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="text-align:center; flex-shrink:0;">
+        <div style="width:110px; height:110px; border:2.5px solid var(--blue); border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#eff6ff; gap:4px;">
+          <div style="font-size:26px;">📱</div>
+          <div style="font-size:10px; font-weight:700; color:var(--blue); line-height:1.3;">Escanea<br>el QR</div>
+        </div>
+        <div style="font-size:10px; color:var(--muted); margin-top:6px;">osunaai.com</div>
+      </div>
+    </div>
+
+    <div class="quote">
+      <p>"Hoy usaste IA como herramienta. La próxima vez que haya una crisis a las 3am, tus agentes ya estarán trabajando — tú solo llegas a tomar decisiones."</p>
+    </div>
+  </div>
+
+  <!-- ── CTA ── -->
+  <div class="cta-section" id="bloques">
+    <h2>¿Lista para el siguiente nivel?</h2>
+    <p>Talleres, Agentes de IA y Consultoría personalizada para tu equipo de comunicación.</p>
+    <div class="cta-btns">
+      <a href="https://osunaai.com" target="_blank" class="cta-btn-white">Agenda tu diagnóstico gratuito</a>
+      <a href="https://wa.me/529983895734" target="_blank" class="cta-btn-ghost">WhatsApp directo</a>
+    </div>
+  </div>
+
+  <!-- ── CIERRE FOTO ── -->
+  <div class="cierre-foto">
+    <div class="cierre-foto-inner">
+      <img src="logo.png" alt="Osuna AI & Data Solutions" class="cierre-foto-img" style="width:200px; align-self:center; padding:28px; object-fit:contain; filter:brightness(0) invert(1);" />
+      <div class="cierre-foto-content">
+        <div class="cierre-foto-label">📸 ¡Momento foto!</div>
+        <h2 class="cierre-foto-headline">Hoy decidiste ser de los que llevan la ventaja.</h2>
+        <p class="cierre-foto-sub">Comparte este momento — etiquétanos y cuéntale a tu red que la IA en las RP ya es una realidad.</p>
+        <div class="cierre-redes">
+          <a href="https://www.instagram.com/osunaai" target="_blank" class="red-badge ig">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+            @osunaai
+          </a>
+          <a href="https://www.facebook.com/OsunaAii" target="_blank" class="red-badge fb">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            @osunaai
+          </a>
+          <a href="https://www.tiktok.com/@osunaai" target="_blank" class="red-badge tt">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.17 8.17 0 0 0 4.77 1.52V6.75a4.85 4.85 0 0 1-1-.06z"/></svg>
+            @osunaai
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-body -->
+
+<!-- FOOTER -->
+<footer>
+  <img src="logo.png" alt="Osuna AI & Data Solutions" style="height:44px; width:auto; margin-bottom:16px; opacity:0.85;" />
+  <p><a href="https://osunaai.com">www.osunaai.com</a> · WhatsApp <a href="https://wa.me/529983895734">998 389 5734</a> · Cancún, Quintana Roo, México</p>
+  <p style="margin-top:6px;">© 2026 · Taller IA Aplicada a las RP · ARPCM · Paola Osuna, CEO & Fundadora</p>
+</footer>
+
+<script>
+  // ── NODE CANVAS ANIMATION ──
+  (function() {
+    const canvas = document.getElementById('nodeCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const BLUE   = '#1478FC';
+    const PURPLE = '#7c5cbf';
+    const LILA   = '#BDA1FA';
+    const COLORS = [BLUE, PURPLE, LILA, '#4a90d9', '#9b7fe8'];
+
+    let W, H, nodes, animId;
+
+    function resize() {
+      W = canvas.width  = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+    }
+
+    function hexPath(cx, cy, r) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const a = Math.PI / 180 * (60 * i - 30);
+        const x = cx + r * Math.cos(a);
+        const y = cy + r * Math.sin(a);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+    }
+
+    function createNode() {
+      const isHex = Math.random() > 0.45;
+      const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      return {
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        r: isHex ? (5 + Math.random() * 8) : (3 + Math.random() * 5),
+        isHex,
+        color,
+        alpha: 0.4 + Math.random() * 0.5,
+        pulse: Math.random() * Math.PI * 2,
+        pulseSpeed: 0.015 + Math.random() * 0.02,
+      };
+    }
+
+    function init() {
+      resize();
+      const count = Math.floor((W * H) / 14000);
+      nodes = Array.from({ length: Math.min(Math.max(count, 18), 50) }, createNode);
+    }
+
+    const CONNECT_DIST = 160;
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Draw connections
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i], b = nodes[j];
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < CONNECT_DIST) {
+            const lineAlpha = (1 - dist / CONNECT_DIST) * 0.22;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            // gradient line
+            const grad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+            grad.addColorStop(0, a.color);
+            grad.addColorStop(1, b.color);
+            ctx.strokeStyle = grad;
+            ctx.globalAlpha = lineAlpha;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw nodes
+      for (const n of nodes) {
+        n.pulse += n.pulseSpeed;
+        const pulseFactor = 1 + 0.08 * Math.sin(n.pulse);
+        const r = n.r * pulseFactor;
+
+        ctx.globalAlpha = n.alpha * (0.85 + 0.15 * Math.sin(n.pulse));
+
+        if (n.isHex) {
+          hexPath(n.x, n.y, r);
+          ctx.fillStyle = n.color + '28';
+          ctx.fill();
+          ctx.strokeStyle = n.color;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          // inner dot
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, r * 0.28, 0, Math.PI * 2);
+          ctx.fillStyle = n.color;
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+          ctx.fillStyle = n.color;
+          ctx.fill();
+        }
+
+        // Move
+        n.x += n.vx;
+        n.y += n.vy;
+        if (n.x < -20) n.x = W + 20;
+        if (n.x > W + 20) n.x = -20;
+        if (n.y < -20) n.y = H + 20;
+        if (n.y > H + 20) n.y = -20;
+      }
+
+      ctx.globalAlpha = 1;
+      animId = requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(animId);
+      init();
+      draw();
+    });
+
+    init();
+    draw();
+  })();
+
+  // Copy prompt button
+  function copyPrompt(btn) {
+    const body = btn.closest('.prompt-wrap').querySelector('.prompt-body');
+    const text = body.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '📋 Copiar';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  // Scroll to section
+  function scrollTo(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      const navH = document.querySelector('.nav-wrap').offsetHeight;
+      const top = el.getBoundingClientRect().top + window.scrollY - navH - 16;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  }
+
+  // Active nav on scroll
+  const sections = ['instructora','bloque1','bloque2','bloque3','bloque4','bloque5','bloque6','bloque7','bloque8'];
+  const navBtns = document.querySelectorAll('.nav-btn');
+
+  const sectionMap = {
+    'instructora': 0, 'bloque1': 1,
+    'bloque2': 2, 'bloque3': 3,
+    'bloque4': 4, 'bloque5': 5, 'bloque6': 6,
+    'bloque7': 7, 'bloque8': 8
+  };
+
+  function updateNav() {
+    const navH = document.querySelector('.nav-wrap').offsetHeight + 20;
+    let current = 'bloque1';
+    for (const id of sections) {
+      const el = document.getElementById(id);
+      if (el && el.getBoundingClientRect().top <= navH) current = id;
+    }
+    navBtns.forEach(b => b.classList.remove('active'));
+    if (sectionMap[current] !== undefined) navBtns[sectionMap[current]].classList.add('active');
+  }
+
+  window.addEventListener('scroll', updateNav, { passive: true });
+</script>
+</body>
+</html>
